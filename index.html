@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator BMI Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #4A90E2;
+            --secondary-color: #50C878;
+            --background-color: #f4f7f6;
+            --card-background: #ffffff;
+            --text-color: #333;
+            --light-gray: #e0e0e0;
+            --underweight-color: #3498db;
+            --normal-color: #2ecc71;
+            --overweight-color: #f1c40f;
+            --obese-color: #e74c3c;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        /* --- Header --- */
+        header {
+            background-color: var(--card-background);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem 0;
+            text-align: center;
+        }
+
+        .header-logo {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        /* --- Main Layout --- */
+        .main-container {
+            display: flex;
+            max-width: 1200px;
+            margin: 2rem auto;
+            gap: 2rem;
+            padding: 0 20px;
+        }
+
+        .content-area {
+            flex: 2;
+        }
+
+        .sidebar {
+            flex: 1;
+        }
+
+        /* --- Calculator Card --- */
+        .calculator-card {
+            background-color: var(--card-background);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+        }
+
+        .calculator-card h1 {
+            color: var(--primary-color);
+            margin-bottom: 10px;
+            font-size: 2.5em;
+            text-align: center;
+        }
+
+        .calculator-card p {
+            color: #666;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 10px;
+            font-weight: 600;
+            font-size: 1.1em;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+        }
+
+        .calculate-btn, .save-btn {
+            width: 100%;
+            padding: 18px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1.2em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        .calculate-btn {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .save-btn {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .calculate-btn:hover, .save-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .calculate-btn:active, .save-btn:active {
+            transform: translateY(-1px);
+        }
+        
+        .error-message {
+            color: var(--obese-color);
+            font-size: 0.9em;
+            margin-top: 8px;
+            display: none;
+        }
+        
+        /* --- Result Section --- */
+        #result-section {
+            margin-top: 40px;
+            padding-top: 30px;
+            border-top: 1px solid var(--light-gray);
+            display: none; /* Initially hidden */
+        }
+
+        #result-section.show {
+            display: block;
+            animation: fadeIn 0.6s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .result-header {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .result-value {
+            font-size: 4em;
+            font-weight: 700;
+            color: var(--text-color);
+        }
+
+        .result-category {
+            font-size: 1.8em;
+            font-weight: 600;
+            padding: 10px 20px;
+            border-radius: 50px;
+            background-color: var(--light-gray);
+        }
+
+        /* --- Gauge --- */
+        .gauge-container {
+            position: relative;
+            width: 280px;
+            height: 140px;
+            margin: 30px auto;
+        }
+
+        .gauge-container svg {
+            width: 100%;
+            height: 100%;
+        }
+
+        .gauge-base {
+            fill: none;
+            stroke: #e0e0e0;
+            stroke-width: 25;
+        }
+
+        .gauge-fill {
+            fill: none;
+            stroke-width: 25;
+            stroke-linecap: round;
+            transition: stroke-dashoffset 0.8s cubic-bezier(0.4, 0, 0.2, 1), stroke 0.5s ease;
+        }
+
+        .gauge-needle {
+            transform-origin: 140px 140px;
+            transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        /* --- BMI Table --- */
+        .bmi-table-container {
+            margin-top: 30px;
+        }
+        .bmi-table-container h3 {
+            text-align: center;
+            margin-bottom: 20px;
+            color: var(--text-color);
+        }
+
+        .bmi-table {
+            width: 100%;
+            border-collapse: collapse;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .bmi-table th, .bmi-table td {
+            padding: 12px 15px;
+            text-align: left;
+        }
+
+        .bmi-table th {
+            background-color: var(--primary-color);
+            color: white;
+            font-weight: 600;
+        }
+
+        .bmi-table tbody tr:nth-child(even) {
+            background-color: var(--background-color);
+        }
+        
+        .bmi-table tbody tr.highlight {
+            font-weight: 700;
+            background-color: #e8f5e9; /* Light green */
+            border-left: 5px solid var(--normal-color);
+        }
+
+        .bmi-table tbody tr.highlight.underweight { border-left-color: var(--underweight-color); background-color: #e3f2fd; }
+        .bmi-table tbody tr.highlight.overweight { border-left-color: var(--overweight-color); background-color: #fffde7; }
+        .bmi-table tbody tr.highlight.obese { border-left-color: var(--obese-color); background-color: #ffebee; }
+
+
+        /* --- History Sidebar --- */
+        #history-section {
+            background-color: var(--card-background);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            padding: 25px;
+            height: fit-content;
+            position: sticky;
+            top: 20px;
+        }
+
+        #history-section h2 {
+            color: var(--primary-color);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .clear-all-btn {
+            background: none;
+            border: none;
+            color: var(--obese-color);
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+        
+        .clear-all-btn:hover {
+            text-decoration: underline;
+        }
+
+        #history-list {
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            background-color: var(--background-color);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+            border-left: 5px solid var(--primary-color);
+            position: relative;
+        }
+
+        .history-item h4 {
+            margin-bottom: 5px;
+            color: var(--primary-color);
+        }
+
+        .history-item p {
+            font-size: 0.9em;
+            color: #555;
+            margin: 2px 0;
+        }
+
+        .history-item .delete-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: var(--obese-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 0.8em;
+        }
+
+        /* --- Responsive Design --- */
+        @media (max-width: 992px) {
+            .main-container {
+                flex-direction: column;
+            }
+            .sidebar {
+                position: static;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .calculator-card {
+                padding: 20px;
+            }
+            .result-header {
+                flex-direction: column;
+            }
+            .result-value {
+                font-size: 3em;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <a href="#" class="header-logo"><i class="fas fa-heartbeat"></i> Kalkulator BMI Pro</a>
+    </header>
+
+    <div class="main-container">
+        <main class="content-area">
+            <div class="calculator-card">
+                <h1>Kalkulator BMI</h1>
+                <p>Hitung Indeks Massa Tubuh Anda untuk mengetahui status berat badan ideal Anda.</p>
+                
+                <form id="bmi-form">
+                    <div class="input-group">
+                        <label for="height">Tinggi Badan (cm)</label>
+                        <input type="number" id="height" placeholder="contoh: 170" required>
+                        <div class="error-message" id="height-error">Masukkan tinggi badan yang valid.</div>
+                    </div>
+                    <div class="input-group">
+                        <label for="weight">Berat Badan (kg)</label>
+                        <input type="number" id="weight" placeholder="contoh: 65" required>
+                        <div class="error-message" id="weight-error">Masukkan berat badan yang valid.</div>
+                    </div>
+                    <button type="submit" class="calculate-btn">Hitung BMI Saya</button>
+                </form>
+
+                <section id="result-section">
+                    <div class="result-header">
+                        <div class="result-value" id="bmi-value">--</div>
+                        <div class="result-category" id="bmi-category">--</div>
+                    </div>
+                    
+                    <div class="gauge-container">
+                        <svg viewBox="0 0 280 140">
+                            <path d="M 30 140 A 110 110 0 0 1 250 140" class="gauge-base"></path>
+                            <path d="M 30 140 A 110 110 0 0 1 250 140" class="gauge-fill" id="gauge-fill"></path>
+                            <polygon points="140,125 135,140 145,140" class="gauge-needle" id="gauge-needle"></polygon>
+                            <circle cx="140" cy="140" r="7" fill="#333"/>
+                        </svg>
+                    </div>
+
+                    <div class="bmi-table-container">
+                        <h3>Kategori BMI</h3>
+                        <table class="bmi-table">
+                            <thead>
+                                <tr>
+                                    <th>Kategori</th>
+                                    <th>Rentang BMI</th>
+                                </tr>
+                            </thead>
+                            <tbody id="bmi-table-body">
+                                <!-- Table rows will be generated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <button class="save-btn" id="save-bmi-btn"><i class="fas fa-save"></i> Simpan Hasil Ini</button>
+                </section>
+            </div>
+        </main>
+
+        <aside class="sidebar">
+            <section id="history-section">
+                <h2>Riwayat <button class="clear-all-btn" id="clear-all-btn">Hapus Semua</button></h2>
+                <div id="history-list">
+                    <!-- History items will be inserted here by JS -->
+                </div>
+            </section>
+        </aside>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // --- DOM Elements ---
+            const bmiForm = document.getElementById('bmi-form');
+            const resultSection = document.getElementById('result-section');
+            const heightInput = document.getElementById('height');
+            const weightInput = document.getElementById('weight');
+            const bmiValueEl = document.getElementById('bmi-value');
+            const bmiCategoryEl = document.getElementById('bmi-category');
+            const gaugeFill = document.getElementById('gauge-fill');
+            const gaugeNeedle = document.getElementById('gauge-needle');
+            const bmiTableBody = document.getElementById('bmi-table-body');
+            const saveBmiBtn = document.getElementById('save-bmi-btn');
+            
+            const heightError = document.getElementById('height-error');
+            const weightError = document.getElementById('weight-error');
+
+            // --- History Elements ---
+            const historyList = document.getElementById('history-list');
+            const clearAllBtn = document.getElementById('clear-all-btn');
+
+            // --- Data ---
+            const bmiCategories = [
+                { name: 'Kurus Sekali', min: 0, max: 16, color: 'var(--underweight-color)', class: 'underweight' },
+                { name: 'Kurus', min: 16, max: 18.5, color: 'var(--underweight-color)', class: 'underweight' },
+                { name: 'Normal (Ideal)', min: 18.5, max: 25, color: 'var(--normal-color)', class: 'normal' },
+                { name: 'Gemuk', min: 25, max: 30, color: 'var(--overweight-color)', class: 'overweight' },
+                { name: 'Obesitas Tingkat I', min: 30, max: 35, color: 'var(--obese-color)', class: 'obese' },
+                { name: 'Obesitas Tingkat II', min: 35, max: 40, color: 'var(--obese-color)', class: 'obese' },
+                { name: 'Obesitas Tingkat III', min: 40, max: 100, color: 'var(--obese-color)', class: 'obese' },
+            ];
+
+            // --- Functions ---
+            function getHistory() {
+                const history = localStorage.getItem('bmiProHistory');
+                return history ? JSON.parse(history) : [];
+            }
+
+            function saveToHistory(data) {
+                const history = getHistory();
+                history.unshift(data);
+                localStorage.setItem('bmiProHistory', JSON.stringify(history));
+                renderHistory();
+            }
+
+            function deleteFromHistory(id) {
+                let history = getHistory();
+                history = history.filter(item => item.id !== id);
+                localStorage.setItem('bmiProHistory', JSON.stringify(history));
+                renderHistory();
+            }
+
+            function renderHistory() {
+                const history = getHistory();
+                historyList.innerHTML = '';
+                if (history.length === 0) {
+                    historyList.innerHTML = '<p style="text-align:center; color:#999;">Belum ada hasil tersimpan.</p>';
+                    return;
+                }
+                history.forEach(item => {
+                    const historyItem = document.createElement('div');
+                    historyItem.className = 'history-item';
+                    historyItem.innerHTML = `
+                        <h4>${item.type}</h4>
+                        <p>${item.date}</p>
+                        <p><strong>Hasil:</strong> ${item.result}</p>
+                        <button class="delete-btn" data-id="${item.id}"><i class="fas fa-times"></i></button>
+                    `;
+                    historyList.appendChild(historyItem);
+                });
+            }
+            
+            function clearAllHistory() {
+                if (confirm('Apakah Anda yakin ingin menghapus semua hasil tersimpan?')) {
+                    localStorage.removeItem('bmiProHistory');
+                    renderHistory();
+                }
+            }
+
+            function updateGauge(bmi, color) {
+                const minBmi = 15;
+                const maxBmi = 40;
+                const clampedBmi = Math.max(minBmi, Math.min(maxBmi, bmi));
+                
+                const angle = ((clampedBmi - minBmi) / (maxBmi - minBmi)) * 180 - 90;
+                gaugeNeedle.style.transform = `rotate(${angle}deg)`;
+
+                const circumference = 2 * Math.PI * 110; // radius is 110
+                const arcLength = ((clampedBmi - minBmi) / (maxBmi - minBmi)) * (circumference / 2);
+                
+                gaugeFill.style.stroke = color;
+                gaugeFill.style.strokeDasharray = `${arcLength} ${circumference}`;
+            }
+            
+            function generateBmiTable(userCategoryClass) {
+                bmiTableBody.innerHTML = '';
+                bmiCategories.forEach(cat => {
+                    const row = document.createElement('tr');
+                    if (cat.class === userCategoryClass) {
+                        row.classList.add('highlight', cat.class);
+                    }
+                    row.innerHTML = `
+                        <td>${cat.name}</td>
+                        <td>${cat.min} - ${cat.max === 100 ? '∞' : cat.max}</td>
+                    `;
+                    bmiTableBody.appendChild(row);
+                });
+            }
+
+            // --- Event Listeners ---
+            bmiForm.addEventListener('submit', (e) => {
+                e.preventDefault();
+                hideErrors();
+                
+                const height = parseFloat(heightInput.value);
+                const weight = parseFloat(weightInput.value);
+
+                if (isNaN(height) || height <= 0) {
+                    heightError.style.display = 'block';
+                    return;
+                }
+                if (isNaN(weight) || weight <= 0) {
+                    weightError.style.display = 'block';
+                    return;
+                }
+
+                const bmi = weight / Math.pow(height / 100, 2);
+                const roundedBmi = bmi.toFixed(1);
+                const category = bmiCategories.find(cat => bmi >= cat.min && bmi < cat.max) || bmiCategories[bmiCategories.length - 1];
+                
+                // Update text
+                bmiValueEl.textContent = roundedBmi;
+                bmiCategoryEl.textContent = category.name;
+                bmiCategoryEl.style.color = category.color;
+
+                // Update gauge and table
+                updateGauge(bmi, category.color);
+                generateBmiTable(category.class);
+
+                // Show result section
+                resultSection.classList.add('show');
+                resultSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+                // Save button logic
+                saveBmiBtn.onclick = () => {
+                    saveToHistory({
+                        id: Date.now(),
+                        type: 'BMI',
+                        date: new Date().toLocaleString('id-ID'),
+                        result: `${roundedBmi} (${category.name})`
+                    });
+                    alert('Hasil berhasil disimpan!');
+                };
+            });
+
+            function hideErrors() {
+                heightError.style.display = 'none';
+                weightError.style.display = 'none';
+            }
+
+            clearAllBtn.addEventListener('click', clearAllHistory);
+            
+            historyList.addEventListener('click', (e) => {
+                if (e.target.closest('.delete-btn')) {
+                    const id = parseInt(e.target.closest('.delete-btn').getAttribute('data-id'));
+                    deleteFromHistory(id);
+                }
+            });
+
+            // --- Initial Load ---
+            renderHistory();
+        });
+    </script>
+
+</body>
+</html>
